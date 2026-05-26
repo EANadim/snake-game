@@ -1,7 +1,23 @@
-import { GRID } from './constants.js'
+import { GRID } from './constants'
 
-export function createGame() {
-  const state = {
+export interface Cell {
+  x: number
+  y: number
+}
+
+export interface GameState {
+  snake: Cell[]
+  direction: Cell
+  queuedDir: Cell
+  food: Cell | null
+  score: number
+  isGameOver: boolean
+}
+
+export type TickResult = 'dead' | 'ate' | 'moved'
+
+export function createGame(): GameState {
+  const state: GameState = {
     snake: [
       { x: 9, y: 10 },
       { x: 8, y: 10 },
@@ -17,26 +33,31 @@ export function createGame() {
   return state
 }
 
-export function placeFood(state) {
-  const free = []
+export function placeFood(state: GameState): void {
+  const free: Cell[] = []
   for (let y = 0; y < GRID; y++) {
     for (let x = 0; x < GRID; x++) {
       if (!state.snake.some((s) => s.x === x && s.y === y)) free.push({ x, y })
     }
   }
-  state.food = free.length ? free[Math.floor(Math.random() * free.length)] : null
+  state.food = free.length
+    ? free[Math.floor(Math.random() * free.length)]
+    : null
 }
 
-export function setDirection(state, dx, dy) {
+export function setDirection(state: GameState, dx: number, dy: number): void {
   if (dx === -state.direction.x && dy === -state.direction.y) return
   state.queuedDir = { x: dx, y: dy }
 }
 
-export function tick(state) {
+export function tick(state: GameState): TickResult {
   if (state.isGameOver) return 'dead'
   state.direction = state.queuedDir
   const head = state.snake[0]
-  const next = { x: head.x + state.direction.x, y: head.y + state.direction.y }
+  const next: Cell = {
+    x: head.x + state.direction.x,
+    y: head.y + state.direction.y,
+  }
 
   if (next.x < 0 || next.x >= GRID || next.y < 0 || next.y >= GRID) {
     state.isGameOver = true

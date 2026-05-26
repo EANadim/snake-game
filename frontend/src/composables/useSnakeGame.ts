@@ -1,19 +1,24 @@
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { createGame, tick, setDirection } from '../game/state.js'
-import { createRenderer } from '../game/renderer.js'
-import { TICK_MS } from '../game/constants.js'
+import { ref, onMounted, onBeforeUnmount, type Ref } from 'vue'
+import {
+  createGame,
+  tick,
+  setDirection,
+  type GameState,
+} from '../game/state'
+import { createRenderer, type Renderer } from '../game/renderer'
+import { TICK_MS } from '../game/constants'
 
-export function useSnakeGame(canvasRef) {
+export function useSnakeGame(canvasRef: Ref<HTMLCanvasElement | null>) {
   const score = ref(0)
   const highScore = ref(0)
   const isGameOver = ref(false)
   const isPaused = ref(false)
   const hasStarted = ref(false)
 
-  let state = null
-  let renderer = null
-  let tickTimer = null
-  let resizeObserver = null
+  let state: GameState | null = null
+  let renderer: Renderer | null = null
+  let tickTimer: ReturnType<typeof setInterval> | null = null
+  let resizeObserver: ResizeObserver | null = null
 
   function resetGame() {
     state = createGame()
@@ -32,14 +37,21 @@ export function useSnakeGame(canvasRef) {
     isPaused.value = !isPaused.value
   }
 
-  function applyDirection(dx, dy) {
+  function applyDirection(dx: number, dy: number) {
     if (!state || isGameOver.value) return
     setDirection(state, dx, dy)
     if (!hasStarted.value) hasStarted.value = true
   }
 
   function doTick() {
-    if (!state || !hasStarted.value || isPaused.value || isGameOver.value) return
+    if (
+      !state ||
+      !renderer ||
+      !hasStarted.value ||
+      isPaused.value ||
+      isGameOver.value
+    )
+      return
     const result = tick(state)
     score.value = state.score
     if (state.score > highScore.value) highScore.value = state.score
@@ -48,7 +60,7 @@ export function useSnakeGame(canvasRef) {
     if (result === 'ate') renderer.syncFood(state)
   }
 
-  function onKeyDown(e) {
+  function onKeyDown(e: KeyboardEvent) {
     switch (e.key) {
       case 'ArrowUp':
       case 'w':
@@ -87,19 +99,20 @@ export function useSnakeGame(canvasRef) {
   }
 
   onMounted(() => {
+    if (!canvasRef.value) return
     renderer = createRenderer(canvasRef.value)
     resetGame()
     tickTimer = setInterval(doTick, TICK_MS)
-    resizeObserver = new ResizeObserver(() => renderer.resize())
+    resizeObserver = new ResizeObserver(() => renderer?.resize())
     resizeObserver.observe(canvasRef.value)
     window.addEventListener('keydown', onKeyDown)
   })
 
   onBeforeUnmount(() => {
-    if (resizeObserver) resizeObserver.disconnect()
+    resizeObserver?.disconnect()
     window.removeEventListener('keydown', onKeyDown)
     if (tickTimer) clearInterval(tickTimer)
-    if (renderer) renderer.dispose()
+    renderer?.dispose()
   })
 
   return {

@@ -46,11 +46,11 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue";
-import { useSnakeGame } from "../composables/useSnakeGame.js";
+import { useSnakeGame } from "../composables/useSnakeGame";
 
-const canvasRef = ref(null);
+const canvasRef = ref<HTMLCanvasElement | null>(null);
 const {
   score,
   highScore,

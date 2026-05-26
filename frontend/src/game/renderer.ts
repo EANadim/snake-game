@@ -9,10 +9,19 @@ import {
   StandardMaterial,
   HemisphericLight,
   LinesBuilder,
+  type Mesh,
 } from '@babylonjs/core'
-import { GRID, COLORS } from './constants.js'
+import { GRID, COLORS, type MaterialSpec } from './constants'
+import type { GameState } from './state'
 
-export function createRenderer(canvas) {
+export interface Renderer {
+  syncSnake(state: GameState): void
+  syncFood(state: GameState): void
+  resize(): void
+  dispose(): void
+}
+
+export function createRenderer(canvas: HTMLCanvasElement): Renderer {
   const engine = new Engine(canvas, true, { stencil: true })
   const scene = new Scene(engine)
   scene.clearColor = new Color4(...COLORS.bgClear)
@@ -33,10 +42,10 @@ export function createRenderer(canvas) {
 
   buildGrid(scene)
 
-  const snakeMeshes = []
-  let foodMesh = null
+  const snakeMeshes: Mesh[] = []
+  let foodMesh: Mesh | null = null
 
-  function syncSnake(state) {
+  function syncSnake(state: GameState) {
     while (snakeMeshes.length < state.snake.length) {
       snakeMeshes.push(
         MeshBuilder.CreateBox(
@@ -47,7 +56,7 @@ export function createRenderer(canvas) {
       )
     }
     while (snakeMeshes.length > state.snake.length) {
-      snakeMeshes.pop().dispose()
+      snakeMeshes.pop()!.dispose()
     }
     for (let i = 0; i < state.snake.length; i++) {
       const seg = state.snake[i]
@@ -58,7 +67,7 @@ export function createRenderer(canvas) {
     }
   }
 
-  function syncFood(state) {
+  function syncFood(state: GameState) {
     if (!state.food) {
       if (foodMesh) {
         foodMesh.dispose()
@@ -105,7 +114,7 @@ export function createRenderer(canvas) {
   }
 }
 
-function makeMat(name, spec, scene) {
+function makeMat(name: string, spec: MaterialSpec, scene: Scene) {
   const m = new StandardMaterial(name, scene)
   m.diffuseColor = new Color3(...spec.diffuse)
   m.emissiveColor = new Color3(...spec.emissive)
@@ -113,7 +122,7 @@ function makeMat(name, spec, scene) {
   return m
 }
 
-function buildGrid(scene) {
+function buildGrid(scene: Scene) {
   const color = new Color3(...COLORS.gridLine)
   for (let i = 0; i <= GRID; i++) {
     const v = LinesBuilder.CreateLines(
