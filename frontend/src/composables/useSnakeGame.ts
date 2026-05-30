@@ -28,7 +28,7 @@ export function useSnakeGame(canvasRef: Ref<HTMLCanvasElement | null>) {
     hasStarted.value = false
     if (renderer) {
       renderer.syncSnake(state)
-      renderer.syncFood(state)
+      renderer.syncFood(state.food)
     }
   }
 
@@ -57,7 +57,7 @@ export function useSnakeGame(canvasRef: Ref<HTMLCanvasElement | null>) {
     if (state.score > highScore.value) highScore.value = state.score
     isGameOver.value = state.isGameOver
     renderer.syncSnake(state)
-    if (result === 'ate') renderer.syncFood(state)
+    if (result === 'ate') renderer.syncFood(state.food)
   }
 
   function onKeyDown(e: KeyboardEvent) {
