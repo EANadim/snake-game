@@ -5,30 +5,38 @@ import MultiplayerView from './components/MultiplayerView.vue'
 
 type View = 'menu' | 'single' | 'multi'
 const view = ref<View>('menu')
+
+const year = new Date().getFullYear()
 </script>
 
 <template>
   <main class="app">
-    <div v-if="view === 'menu'" class="menu">
-      <div class="menu-title">SNAKE</div>
-      <p class="menu-sub">Choose a mode</p>
-      <button class="menu-btn" @click="view = 'single'">Single Player</button>
-      <button class="menu-btn primary" @click="view = 'multi'">Multiplayer</button>
+    <div class="app-content">
+      <div v-if="view === 'menu'" class="menu">
+        <div class="menu-title">SNAKE</div>
+        <p class="menu-sub">Choose a mode</p>
+        <button class="menu-btn" @click="view = 'single'">Single Player</button>
+        <button class="menu-btn primary" @click="view = 'multi'">Multiplayer</button>
+      </div>
+
+      <template v-else-if="view === 'single'">
+        <div class="back-bar">
+          <button class="back" @click="view = 'menu'">← Menu</button>
+        </div>
+        <SnakeGame />
+      </template>
+
+      <template v-else>
+        <div class="back-bar">
+          <button class="back" @click="view = 'menu'">← Menu</button>
+        </div>
+        <MultiplayerView @back="view = 'menu'" />
+      </template>
     </div>
 
-    <template v-else-if="view === 'single'">
-      <div class="back-bar">
-        <button class="back" @click="view = 'menu'">← Menu</button>
-      </div>
-      <SnakeGame />
-    </template>
-
-    <template v-else>
-      <div class="back-bar">
-        <button class="back" @click="view = 'menu'">← Menu</button>
-      </div>
-      <MultiplayerView @back="view = 'menu'" />
-    </template>
+    <footer class="app-footer">
+      © {{ year }} Ehtesham Ahmad Nadim. All rights reserved.
+    </footer>
   </main>
 </template>
 
@@ -38,9 +46,26 @@ const view = ref<View>('menu')
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   padding: 16px;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.app-content {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-footer {
+  width: 100%;
+  padding: 16px 8px 4px;
+  text-align: center;
+  font-size: 12px;
+  color: #6b7080;
+  letter-spacing: 0.3px;
 }
 
 .menu {
